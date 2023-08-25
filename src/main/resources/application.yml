@@ -9,8 +9,8 @@ riot:
 logging:
   level:
     com:
-      example:
-        openfeign: DEBUG
+      immersion:
+        riot: DEBUG
 spring:
   cloud:
     openfeign:
@@ -23,3 +23,7 @@ spring:
     properties:
       hibernate:
         default_batch_fetch_size: 1000
+
+cors:
+  allow-methods : ['GET', 'POST', 'PUT', 'DELETE']
+  allow-origins : ['http://localhost:3000']
