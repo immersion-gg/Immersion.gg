@@ -20,7 +20,7 @@ public class MatchCreateApi {
     private final MatchCreateService matchCreateService;
 
     @PostMapping("/match/{puuid}")
-    public ResponseEntity<String> saveAllMatch(@PathVariable String puuid) {
+    public ResponseEntity<String> updateMatchHistory(@PathVariable String puuid) {
         matchCreateService.saveMatchList(puuid);
         return ResponseEntity.ok("save complete!");
     }

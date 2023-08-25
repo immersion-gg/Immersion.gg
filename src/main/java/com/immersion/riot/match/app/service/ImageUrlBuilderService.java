@@ -1,8 +1,11 @@
 package com.immersion.riot.match.app.service;
 
 import com.immersion.riot.common.app.NoDataException;
+import com.immersion.riot.match.domain.repository.RedisRepository;
 import com.immersion.riot.match.infra.client.CdnClient;
 import com.immersion.riot.match.infra.dto.*;
+import io.micrometer.common.util.StringUtils;
+import io.netty.util.internal.StringUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,6 +19,7 @@ import java.util.List;
 public class ImageUrlBuilderService {
 
     private final CdnClient cdnClient;
+    private final RedisRepository redisRepository;
 
     @Value("${riot.versions}")
     private String VERSION;
@@ -24,35 +28,51 @@ public class ImageUrlBuilderService {
     private String CDN_URL;
 
     public String getSpellImageUrl(int spellKey) {
-        SummonerCastQueryResponse summonerCastResponse = cdnClient.getSummonerCast(VERSION);
-        SummonerCastDto summonerCast = summonerCastResponse.data().values().stream()
-                .filter(summonerCastDto -> summonerCastDto.key() == spellKey)
-                .findFirst()
-                .orElseThrow(() -> new NoDataException("spellKey: " + spellKey + "에 해당하는 스펠이 없습니다."));
 
-        return CDN_URL + VERSION + "/img/spell/"  + summonerCast.image().full();
+        String spellImage = redisRepository.getSpellImage(String.valueOf(spellKey));
+
+        if (StringUtils.isBlank(spellImage)) {
+            SummonerCastQueryResponse summonerCastResponse = cdnClient.getSummonerCast(VERSION);
+            summonerCastResponse.data().values().forEach(summonerCastDto ->
+                    redisRepository.setSpellImage(String.valueOf(summonerCastDto.key()), summonerCastDto.image().full()));
+
+
+            return CDN_URL + VERSION + "/img/spell/"  + redisRepository.getSpellImage(String.valueOf(spellKey));
+        }
+
+        return CDN_URL + VERSION + "/img/spell/"  + spellImage;
+
     }
 
     public String getPerkImageUrl(int perkId) {
-        List<SummonerPerksQueryResponse> summonerPerkResponse = cdnClient.getSummonerPerk(VERSION);
 
-        SummonerPerksQueryResponse summonerPerk = summonerPerkResponse.stream()
-                .filter(summonerPerksQueryResponse -> summonerPerksQueryResponse.id() == perkId)
-                .findFirst()
-                .orElseThrow(() -> new NoDataException("perkId: " + perkId + "에 해당하는 룬이 없습니다."));
+        String perkImage = redisRepository.getPerkImage(String.valueOf(perkId));
 
-        return CDN_URL + "img/" + summonerPerk.icon();
+        if (StringUtils.isBlank(perkImage)) {
+            List<SummonerPerksQueryResponse> summonerPerksQueryResponses = cdnClient.getSummonerPerk(VERSION);
+
+            summonerPerksQueryResponses.forEach(summonerPerkResponse ->
+                    redisRepository.setPerkImage(String.valueOf(summonerPerkResponse.id()),summonerPerkResponse.icon()));
+
+            return CDN_URL + "img/" + redisRepository.getPerkImage(String.valueOf(perkId));
+        }
+
+        return CDN_URL + "img/" + perkImage;
     }
 
     public String getChampionImageUrl(int championKey) {
-        ChampionQueryResponse championQueryResponse = cdnClient.getChampion(VERSION);
 
-        ChampionDto champion = championQueryResponse.data().values().stream()
-                .filter(championDto -> championDto.key() == championKey)
-                .findFirst()
-                .orElseThrow(() -> new NoDataException("championKey: " + championKey  + "에 해당하는 챔피언이 없습니다."));
+        String championImage = redisRepository.getChampionImage(String.valueOf(championKey));
 
-        return CDN_URL + VERSION + "/img/champion/" + champion.image().full();
+        if (StringUtils.isBlank(championImage)) {
+            ChampionQueryResponse championQueryResponse = cdnClient.getChampion(VERSION);
+
+            championQueryResponse.data().values().forEach(
+                    championDto -> redisRepository.setChampionImage(String.valueOf(championDto.key()), championDto.image().full())
+            );
+            return CDN_URL + VERSION + "/img/champion/" + redisRepository.getChampionImage(String.valueOf(championKey));
+        }
+        return CDN_URL + VERSION + "/img/champion/" + championImage;
     }
 
     public String getChampionImageUrlByName(String championName) {
@@ -62,5 +82,9 @@ public class ImageUrlBuilderService {
 
     public String getItemImageUrl(int itemKey) {
         return CDN_URL + VERSION + "/img/item/" + itemKey + ".png";
+    }
+    
+    public String getProfileImageUrl(int profileIconId) {
+        return CDN_URL + VERSION + "/img/profileicon/" + profileIconId + ".png";
     }
 }

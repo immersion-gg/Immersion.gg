@@ -1,0 +1,10 @@
+version: "3.8"
+services:
+  immersion-redis:
+    container_name: immersion-redis
+    build:
+      dockerfile: Dockerfile
+      context: ./redis
+    image: jiwonkkang/immersion-redis
+    ports:
+      - "6379:6379"

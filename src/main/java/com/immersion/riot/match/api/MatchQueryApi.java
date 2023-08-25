@@ -1,12 +1,9 @@
 package com.immersion.riot.match.api;
 
 import com.immersion.riot.match.app.dto.*;
-import com.immersion.riot.match.app.service.ImageUrlBuilderService;
 import com.immersion.riot.match.app.service.WinRateAnalysisService;
-import com.immersion.riot.match.query.ChampionStatQueryService;
 import com.immersion.riot.match.query.MatchQueryService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
@@ -17,9 +14,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
@@ -47,9 +42,9 @@ public class MatchQueryApi {
         return ResponseEntity.ok(matchWithStatsResponse);
     }
 
-    @GetMapping("/match/win-rate/{puuid}")
-    public Map<String, ChampionWinRateResponse> analyzeWinRate(@PathVariable String puuid, @RequestParam String championName) {
-        return winRateAnalysisService.caculateWinRate(puuid, championName);
+    @GetMapping("/match/win-rate/{puuid}/{championName}")
+    public Map<String, ChampionWinRateResponse> analyzeWinRate(@PathVariable String puuid, @PathVariable String championName) {
+        return winRateAnalysisService.getAnalyzedWinRate(puuid, championName);
     }
 
 }

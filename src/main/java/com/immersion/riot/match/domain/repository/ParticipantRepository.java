@@ -21,7 +21,7 @@ public interface ParticipantRepository extends JpaRepository<Participant, Long> 
     @Query("SELECT NEW com.immersion.riot.match.app.dto.ChampionStatsDto(p.championName, p.championId, COUNT(p), SUM(CASE WHEN p.win = true THEN 1 ELSE 0 END)," +
             " SUM(CASE WHEN p.win = false THEN 1 ELSE 0 END), AVG(p.kills), AVG(p.deaths), AVG(p.assists)) " +
             "FROM Participant p " +
-            "WHERE p.summonerName = :summonerName " +
+            "WHERE p.summonerName = LOWER(:summonerName) " +
             "GROUP BY p.championName, p.championId " +
             "ORDER BY COUNT(p) DESC")
     List<ChampionStatsDto> getChampionStatsBySummonerName(String summonerName); //TODO : 페이징 필요(?)

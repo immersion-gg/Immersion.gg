@@ -16,22 +16,22 @@ public class UserRatingApi {
     private final UserRatingService userRatingService;
     private final UserRatingViewService userRatingViewService;
 
-    @PostMapping("/rate")
+    @PostMapping("/rating")
     public ResponseEntity<String> rateUser(@RequestBody UserRatingRequest ratingRequest) {
         userRatingService.rateUser(ratingRequest);
         return ResponseEntity.ok("Rated Successfully.");
     }
 
-    @GetMapping("/rating/{userId}")
-    public ResponseEntity<List<Double>> getAverageRating(@PathVariable Long userId) {
+    @GetMapping("/rating/{puuid}")
+    public ResponseEntity<List<Double>> getAverageRating(@PathVariable String puuid) {
 
-        List<Double> userRatings = userRatingViewService.getUserRating(userId);
+        List<Double> userRatings = userRatingViewService.getUserRating(puuid);
         return ResponseEntity.ok(userRatings);
     }
 
-    @GetMapping("/ingame/rating/{userId}")
-    public ResponseEntity<Double> getInGameRating(@PathVariable Long userId) {
-        double InGameRating = userRatingViewService.getInGameRatings(userId);
+    @GetMapping("/ingame/rating/{puuid}")
+    public ResponseEntity<Double> getInGameRating(@PathVariable String puuid) {
+        double InGameRating = userRatingViewService.getInGameRatings(puuid);
         return ResponseEntity.ok(InGameRating);
     }
 }

@@ -10,9 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -24,7 +22,7 @@ public class WinRateAnalysisService {
     private final MatchRepository matchRepository;
     private final ImageUrlBuilderService imageUrlBuilderService;
 
-    public Map<String, ChampionWinRateResponse> caculateWinRate(String puuid, String championName) {
+    public Map<String, ChampionWinRateResponse> getAnalyzedWinRate(String puuid, String championName) {
         List<Match> matchList = matchRepository.getMatchIdByPuuidAndChampionId(puuid, championName);
 
         return calculateWinRate(matchList, puuid).entrySet().stream()
@@ -32,7 +30,9 @@ public class WinRateAnalysisService {
                         Map.Entry::getKey,
                         entry -> ChampionWinRateResponse.from(
                                 entry.getValue(),
-                                imageUrlBuilderService.getChampionImageUrlByName(entry.getKey()))
+                                imageUrlBuilderService.getChampionImageUrlByName(entry.getKey())),
+                        (oldValue, newValue) -> oldValue,
+                        LinkedHashMap::new
                 ));
     }
 
@@ -58,6 +58,14 @@ public class WinRateAnalysisService {
                                 .incrementWins(participant.isWin() ? 0 : 1);
                     });
         }
-        return championWinRateMap;
+
+        return championWinRateMap.entrySet().stream()
+                .sorted(Collections.reverseOrder(Comparator.comparingDouble(o -> o.getValue().getTotalMatches())))
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue,
+                        (oldValue, newValue) -> oldValue,
+                        LinkedHashMap::new
+                ));
     }
 }

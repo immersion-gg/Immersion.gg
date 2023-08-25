@@ -32,10 +32,10 @@ public record MatchQueryResponse(
                                 participantDto.item6(),
                                 participantDto.champLevel(),
                                 participantDto.championId(),
-                                participantDto.championName(), //TODO : 챔피언 이름 한국어로 저장?
+                                participantDto.championName().toLowerCase(), //TODO : 챔피언 이름 한국어로 저장?
                                 participantDto.puuid(),
                                 participantDto.summonerId(),
-                                participantDto.summonerName(),
+                                participantDto.summonerName().toLowerCase(),
                                 participantDto.teamId(),
                                 participantDto.teamPosition(),
                                 participantDto.totalDamageDealtToChampions(),
